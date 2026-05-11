@@ -26,7 +26,7 @@ def run_bot():
     tg_service = TelegramService(Config.BOT_TOKEN, Config.CHAT_ID)
     upwork_service = UpworkService(Config.UPWORK_URLS[0])
     storage = StorageService() # Memory
-    my_filter = FilterService(Config.KEYWORDS) # Brain
+    my_filter = FilterService(Config.KEYWORDS, Config.BLACKLIST) # Brain
     
     logging.info(f"Watching for keywords: {Config.KEYWORDS}")
 
@@ -34,29 +34,32 @@ def run_bot():
         try:
             # [MENTOR NOTE]: We now loop through each URL in our list
             for url in Config.UPWORK_URLS:
-                logging.info(f"Checking feed: {url}")
+                logging.info(f"🔍 Checking feed: {url}")
                 
-                # We update the service with the current URL before fetching
                 upwork_service.feed_url = url.strip()
                 jobs = upwork_service.fetch_latest_jobs()
                 
+                if not jobs:
+                    logging.warning(f"⚠️ No jobs found at all in this feed URL.")
+
                 for job in jobs:
-                    # First check: Is it new?
-                    if storage.is_new(job.link):
+                    # Check if already sent
+                    if not storage.is_new(job.link):
+                        logging.debug(f"⏭️ Skipping (Already Seen): {job.title[:30]}...")
+                        continue
+                    
+                    # Check if it matches our keywords/blacklist
+                    if my_filter.is_match(job):
+                        logging.info(f"✅ MATCH FOUND: {job.title}")
                         
-                        # Second check: Does it match our interests?
-                        if my_filter.is_match(job):
-                            logging.info(f"🎯 MATCH FOUND: {job.title}")
-                            
-                            # --- PROFESSIONAL FORMATTING ---
-                            message = Formatter.format_telegram(job)
-                            
-                            if tg_service.send_message(message):
-                                storage.save(job.link)
-                        else:
+                        message = Formatter.format_telegram(job)
+                        if tg_service.send_message(message):
                             storage.save(job.link)
                     else:
-                        pass 
+                        # Log WHY it was skipped (This is the fix for the "silence"!)
+                        logging.info(f"❌ Skipping (No Keyword Match): {job.title[:40]}...")
+                        storage.save(job.link) # Still save it so we don't re-scan
+
 
         except Exception as e:
             logging.error(f"⚠️ Error in main loop: {e}")
