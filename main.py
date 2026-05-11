@@ -31,33 +31,34 @@ def run_bot():
 
     while True: # Infinite loop for automation
         try:
-            logging.info("Checking for new jobs from Upwork...")
-            jobs = upwork_service.fetch_latest_jobs()
-            
-            for job in jobs:
-                # First check: Is it new?
-                if storage.is_new(job.link):
-                    
-                    # Second check: Does it match our interests?
-                    if my_filter.is_match(job):
-                        logging.info(f"🎯 MATCH FOUND: {job.title}")
+            # [MENTOR NOTE]: We now loop through each URL in our list
+            for url in Config.UPWORK_URLS:
+                logging.info(f"Checking feed: {url}")
+                
+                # We update the service with the current URL before fetching
+                upwork_service.feed_url = url.strip()
+                jobs = upwork_service.fetch_latest_jobs()
+                
+                for job in jobs:
+                    # First check: Is it new?
+                    if storage.is_new(job.link):
                         
-                        # Use HTML tags for professional Telegram formatting
-                        message = f"<b>🎯 NEW MATCH:</b> {job.title}\n\n🔗 <a href='{job.link}'>View Job</a>"
-                        
-                        # Only save to history if the message was sent successfully
-                        if tg_service.send_message(message):
+                        # Second check: Does it match our interests?
+                        if my_filter.is_match(job):
+                            logging.info(f"🎯 MATCH FOUND: {job.title}")
+                            
+                            message = f"<b>🎯 NEW MATCH:</b> {job.title}\n\n🔗 <a href='{job.link}'>View Job</a>"
+                            
+                            if tg_service.send_message(message):
+                                storage.save(job.link)
+                        else:
                             storage.save(job.link)
                     else:
-                        # [MENTOR TIP]: We save skipped jobs too so we don't re-filter them!
-                        storage.save(job.link)
-                else:
-                    # Job already seen, ignore it
-                    pass 
+                        pass 
 
         except Exception as e:
-            # If the internet fails, we don't want the bot to stop!
             logging.error(f"⚠️ Error in main loop: {e}")
+
         
         # Wait for 10 minutes to avoid getting blocked by Upwork
         logging.info("Waiting 10 minutes before next check...")
