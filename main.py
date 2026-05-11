@@ -5,6 +5,7 @@ from logic.telegram import TelegramService
 from services.upwork import UpworkService 
 from services.storage import StorageService 
 from logic.filter import FilterService # Import our new filter logic
+from logic.formatter import Formatter # Import our new formatting tool
 
 # [MENTOR NOTE]: Setting up basicConfig at the start ensures all logs follow the same format
 logging.basicConfig(
