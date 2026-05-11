@@ -13,6 +13,9 @@ class Config:
     BOT_TOKEN = os.getenv("BOT_TOKEN") 
     CHAT_ID = os.getenv("CHAT_ID")
     UPWORK_FEED_URL = "https://www.upwork.com/ab/feed/jobs/rss?q=reactjs"
+    # We read the KEYWORDS string and split it by commas into a list
+    KEYWORDS = os.getenv("KEYWORDS", "react,python").split(",")
+
 
     @staticmethod
     def validate():
