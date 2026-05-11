@@ -47,7 +47,8 @@ def run_bot():
                         if my_filter.is_match(job):
                             logging.info(f"🎯 MATCH FOUND: {job.title}")
                             
-                            message = f"<b>🎯 NEW MATCH:</b> {job.title}\n\n🔗 <a href='{job.link}'>View Job</a>"
+                            # --- PROFESSIONAL FORMATTING ---
+                            message = Formatter.format_telegram(job)
                             
                             if tg_service.send_message(message):
                                 storage.save(job.link)
