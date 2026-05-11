@@ -15,6 +15,9 @@ class Config:
     UPWORK_URLS = os.getenv("UPWORK_URLS", "https://www.upwork.com/ab/feed/jobs/rss?q=reactjs").split(",")
     # We read the KEYWORDS string and split it by commas into a list
     KEYWORDS = os.getenv("KEYWORDS", "react,python").split(",")
+    # We read the BLACKLIST string and split it into a list
+    BLACKLIST = os.getenv("BLACKLIST", "").split(",")
+
 
 
     @staticmethod
