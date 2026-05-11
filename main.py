@@ -24,7 +24,7 @@ def run_bot():
     
     # 2. Initialization: Create our modular services
     tg_service = TelegramService(Config.BOT_TOKEN, Config.CHAT_ID)
-    upwork_service = UpworkService(Config.UPWORK_FEED_URL)
+    upwork_service = UpworkService(Config.UPWORK_URLS[0])
     storage = StorageService() # Memory
     my_filter = FilterService(Config.KEYWORDS) # Brain
     
